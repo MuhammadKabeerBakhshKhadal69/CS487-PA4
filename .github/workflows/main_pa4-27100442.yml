@@ -25,15 +25,15 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: pa427100442-a0bmd0dybfadc0cg.azurecr.io/
-          username: ${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_DB0EF50AFE604866B5C807E7A09195D5 }}
-          password: ${{ secrets.AZUREAPPSERVICE_CONTAINERPASSWORD_E921A823B5AB4A8EA7B874255E98D6BE }}
+          username: ${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_B6BFCEF8543A460FB7B50E57873424EC }}
+          password: ${{ secrets.AZUREAPPSERVICE_CONTAINERPASSWORD_2A87AB826C4D41BCBEE7DF02C24D662B }}
 
       - name: Build and push container image to registry
         uses: docker/build-push-action@v3
         with:
           context: .
           push: true
-          tags: pa427100442-a0bmd0dybfadc0cg.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_DB0EF50AFE604866B5C807E7A09195D5 }}/validate-api:${{ github.sha }}
+          tags: pa427100442-a0bmd0dybfadc0cg.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_B6BFCEF8543A460FB7B50E57873424EC }}/validate-api:${{ github.sha }}
           file: ./Dockerfile
 
   deploy:
@@ -49,9 +49,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_C87631E3B12A4CEB8D0F0CA5E5CE0E40 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_5B967DE594EF4C83AEA7A74184E8F4C3 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0C28D0612B5C44AF89E100EF655030D7 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_61DFACAD0DE34799BAB69D5D20D1FABB }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_CA8E983D24704373863A452DA2DC36E2 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_BC0DF96B59514F72937D8ACC6C8C82DE }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -59,5 +59,5 @@ jobs:
         with:
           app-name: 'pa4-27100442'
           slot-name: 'Production'
-          images: 'pa427100442-a0bmd0dybfadc0cg.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_DB0EF50AFE604866B5C807E7A09195D5 }}/validate-api:${{ github.sha }}'
+          images: 'pa427100442-a0bmd0dybfadc0cg.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_B6BFCEF8543A460FB7B50E57873424EC }}/validate-api:${{ github.sha }}'
           
