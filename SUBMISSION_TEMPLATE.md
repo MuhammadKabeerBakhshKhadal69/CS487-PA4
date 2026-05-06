@@ -283,3 +283,4 @@ ACR Pull Errors in AKS: My validator pod was stuck in ImagePullBackOff. I discov
 
 
 ---
+faced the issue that the manual and the fork was old and the previous manual was wrong having the webservices as container instaed of code whoch caused me to not attempt the task 7 so i want some marks in that THANK YOU
