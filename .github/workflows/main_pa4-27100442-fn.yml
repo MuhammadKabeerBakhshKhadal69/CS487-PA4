@@ -1,0 +1,63 @@
+# Docs for the Azure Functions Deploy action: https://github.com/Azure/functions-action
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy container app to Azure Functions - pa4-27100442-fn
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to container registry
+        uses: docker/login-action@v2
+        with:
+          registry: pa427100442-a0bmd0dybfadc0cg.azurecr.io/
+          username: ${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_C7BA355249C44EE79E46221811119726 }}
+          password: ${{ secrets.AZUREAPPSERVICE_CONTAINERPASSWORD_445A6CF2714F476BA11B29B86ADC0FD3 }}
+
+      - name: Build and push container image to registry
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: pa427100442-a0bmd0dybfadc0cg.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_C7BA355249C44EE79E46221811119726 }}/func-app:${{ github.sha }}
+          file: ./Dockerfile
+
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+
+    needs: build
+    
+    steps:
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_1487D5DF6F2946998B99134E248C9043 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4293A01FD35146DC89BC9EE7A7B39209 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_454DF9D7361849EFB4E3861B8B4DFE67 }}
+
+      - name: Deploy to Azure Functions
+        id: deploy-to-functions
+        uses: azure/functions-deploy@v2
+        with:
+          app-name: 'pa4-27100442-fn'
+          slot-name: 'Production'
+          images: 'pa427100442-a0bmd0dybfadc0cg.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_C7BA355249C44EE79E46221811119726 }}/func-app:${{ github.sha }}'
+          
