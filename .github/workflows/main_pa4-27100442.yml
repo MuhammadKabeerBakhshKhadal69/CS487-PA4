@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy Node.js app to Azure Web App - pa4-27100442
+name: Build and deploy container app to Azure Web App - pa4-27100442
 
 on:
   push:
@@ -18,48 +18,46 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22.x'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-      - name: npm install, build, and test
-        run: |
-          npm install
-          npm run build --if-present
-          npm run test --if-present
-
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
+      - name: Log in to container registry
+        uses: docker/login-action@v2
         with:
-          name: node-app
-          path: .
+          registry: pa427100442-a0bmd0dybfadc0cg.azurecr.io/
+          username: ${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_DB0EF50AFE604866B5C807E7A09195D5 }}
+          password: ${{ secrets.AZUREAPPSERVICE_CONTAINERPASSWORD_E921A823B5AB4A8EA7B874255E98D6BE }}
+
+      - name: Build and push container image to registry
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: pa427100442-a0bmd0dybfadc0cg.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_DB0EF50AFE604866B5C807E7A09195D5 }}/validate-api:${{ github.sha }}
+          file: ./Dockerfile
 
   deploy:
     runs-on: ubuntu-latest
-    needs: build
     permissions:
       id-token: write #This is required for requesting the JWT
       contents: read #This is required for actions/checkout
 
+    needs: build
+    
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: node-app
       
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_E0791F7BBF3A483ABA3608A32945655F }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_5105290414B540FEA3C9BA29DD94134B }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_A5289589660846A387751DF0F4C1C3E3 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_C87631E3B12A4CEB8D0F0CA5E5CE0E40 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_5B967DE594EF4C83AEA7A74184E8F4C3 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_0C28D0612B5C44AF89E100EF655030D7 }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy to Azure Web App
         id: deploy-to-webapp
-        uses: azure/webapps-deploy@v3
+        uses: azure/webapps-deploy@v2
         with:
           app-name: 'pa4-27100442'
           slot-name: 'Production'
-          package: .
+          images: 'pa427100442-a0bmd0dybfadc0cg.azurecr.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_DB0EF50AFE604866B5C807E7A09195D5 }}/validate-api:${{ github.sha }}'
           
